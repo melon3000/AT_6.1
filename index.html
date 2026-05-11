@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aerofold 2.0</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1 data-i18n="siteTitle">Aerofold 2.0</h1>
+      <p data-i18n="siteSubtitle">Paberlennukite voltimisjuhendid</p>
+    </div>
+
+    <nav class="nav">
+      <a href="#planes" data-i18n="navPlanes">Lennukid</a>
+      <a href="#about" data-i18n="navAbout">Projektist</a>
+      <button id="btn-et" class="small-button">EE</button>
+      <button id="btn-en" class="small-button">EN</button>
+      <button id="theme-toggle" class="small-button" data-i18n="themeButton">Teema</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h2 data-i18n="heroTitle">Vali paberlennuk ja alusta voltimist</h2>
+      <p data-i18n="heroText">
+        Leht toetab eesti ja inglise keelt ning heledat ja tumedat teemat.
+      </p>
+    </section>
+
+    <section id="planes">
+      <h2 data-i18n="planesHeading">Lennukid</h2>
+      <div id="planes-container" class="cards"></div>
+    </section>
+
+      <section id="about" class="info-box">
+          <h2 data-i18n="aboutHeading">Projektist</h2>
+
+          <p data-i18n="aboutText">
+              Sprint 2 keskendub lihtsale disainile, keelevalikule, teemale ja agiilsele otsusele mitte arendada native äppe selles sprindis.
+          </p>
+
+          <h3>Projekti sisu</h3>
+          <ul>
+              <li><strong>index.html</strong> - veebilehe struktuur.</li>
+              <li><strong>style.css</strong> - kujundus ja Dark / Light teema.</li>
+              <li><strong>script.js</strong> - keelevahetus, teema vahetus ja localStorage.</li>
+              <li><strong>README.md</strong> - projekti kirjeldus.</li>
+
+          </ul>
+
+          <h3>Funktsionaalsus</h3>
+
+          <h4>1. Mitmekeelsus</h4>
+          <p>
+              Lehel on EE / EN keelevalik.
+          </p>
+
+          <p>Valitud keel muudab reaalajas:</p>
+
+          <ul>
+              <li>navigeerimise tekstid;</li>
+              <li>lehe pealkirjad;</li>
+              <li>lennukite nimed;</li>
+              <li>lennukite kirjeldused;</li>
+              <li>voltimise sammud.</li>
+          </ul>
+
+          <p>
+              Valitud keel salvestatakse brauseri localStorage'i.
+          </p>
+
+          <h4>2. Dark / Light teema</h4>
+
+          <p>
+              Lehel on teema vahetamise nupp.
+          </p>
+
+          <p>Teema:</p>
+
+          <ul>
+              <li>muudab kogu lehe värviskeemi;</li>
+              <li>salvestatakse localStorage'i;</li>
+              <li>kasutab esmakordsel avamisel prefers-color-scheme süsteemieelistust.</li>
+          </ul>
+
+          <h3>Kasutatud põhimõtted</h3>
+
+          <ul>
+              <li>Simple Design</li>
+              <li>Working software</li>
+              <li>Scope Management</li>
+              <li>Agile compromise</li>
+              <li>XP: lihtsaim lahendus, mis töötab</li>
+          </ul>
+      </section>
+  </main>
+
+  <footer>
+    <p data-i18n="footerText">AT 6.1 Praktiline projektijuhtimine - Sprint 2</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
