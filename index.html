@@ -4,102 +4,270 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aerofold 2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Animated background canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- HEADER -->
   <header class="header">
-    <div>
-      <h1 data-i18n="siteTitle">Aerofold 2.0</h1>
-      <p data-i18n="siteSubtitle">Paberlennukite voltimisjuhendid</p>
+    <div class="logo-group">
+      <div class="logo-icon">✈</div>
+      <div>
+        <h1 class="logo-title" data-i18n="siteTitle">Aerofold 2.0</h1>
+        <span class="logo-sub" data-i18n="siteSubtitle">Paberlennukite voltimisjuhendid</span>
+      </div>
     </div>
 
     <nav class="nav">
       <a href="#planes" data-i18n="navPlanes">Lennukid</a>
+      <a href="#tutorial" data-i18n="navTutorial">Juhend</a>
+      <a href="#analysis" data-i18n="navAnalysis">Analüüs</a>
       <a href="#about" data-i18n="navAbout">Projektist</a>
-      <button id="btn-et" class="small-button">EE</button>
-      <button id="btn-en" class="small-button">EN</button>
-      <button id="theme-toggle" class="small-button" data-i18n="themeButton">Teema</button>
+      <div class="lang-switcher">
+        <button id="btn-et" class="lang-btn active" aria-label="Eesti keel">EE</button>
+        <button id="btn-en" class="lang-btn" aria-label="English">EN</button>
+      </div>
+      <button id="theme-toggle" class="theme-btn" aria-label="Toggle theme">
+        <span class="theme-icon-sun">☀</span>
+        <span class="theme-icon-moon">☽</span>
+      </button>
     </nav>
   </header>
 
   <main>
+
+    <!-- HERO -->
     <section class="hero">
-      <h2 data-i18n="heroTitle">Vali paberlennuk ja alusta voltimist</h2>
-      <p data-i18n="heroText">
-        Leht toetab eesti ja inglise keelt ning heledat ja tumedat teemat.
-      </p>
+      <div class="hero-text">
+        <div class="hero-badge" data-i18n="heroBadge">Sprint 2 · Aerofold</div>
+        <h2 class="hero-title" data-i18n="heroTitle">Vali paberlennuk ja alusta voltimist</h2>
+        <p class="hero-desc" data-i18n="heroText">Leht toetab eesti ja inglise keelt ning heledat ja tumedat teemat.</p>
+        <div class="hero-ctas">
+          <a href="#planes" class="btn-primary" data-i18n="heroCta">Vaata lennukeid →</a>
+          <a href="#analysis" class="btn-ghost" data-i18n="heroCtaAlt">Sprint analüüs</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="plane-anim" id="plane-anim">✈</div>
+        <div class="orbit-ring ring-1"></div>
+        <div class="orbit-ring ring-2"></div>
+        <div class="orbit-ring ring-3"></div>
+      </div>
     </section>
 
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-num" data-count="3">0</span>
+        <span class="stat-label" data-i18n="stat1">Lennukit</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" data-count="2">0</span>
+        <span class="stat-label" data-i18n="stat2">Keelt</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" data-count="2">0</span>
+        <span class="stat-label" data-i18n="stat3">Teemat</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" data-count="100">0</span>
+        <span class="stat-label" data-i18n="stat4">% Agiilne</span>
+      </div>
+    </div>
+
+    <!-- PLANES SECTION -->
     <section id="planes">
-      <h2 data-i18n="planesHeading">Lennukid</h2>
+      <div class="section-header">
+        <div class="section-tag" data-i18n="sectionTag1">Kataloog</div>
+        <h2 data-i18n="planesHeading">Lennukid</h2>
+        <p data-i18n="planesDesc">Vali oma lennuk ja järgi voltimise juhiseid samm-sammult.</p>
+      </div>
       <div id="planes-container" class="cards"></div>
     </section>
 
-      <section id="about" class="info-box">
-          <h2 data-i18n="aboutHeading">Projektist</h2>
+    <!-- FOLDING TUTORIAL (multimedia) -->
+    <section id="tutorial" class="tutorial-section">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="sectionTag2">Juhend</div>
+        <h2 data-i18n="tutorialHeading">Voltimise põhireeglid</h2>
+        <p data-i18n="tutorialDesc">Enne lennuki tegemist tutvu põhireeglitega parima tulemuse saavutamiseks.</p>
+      </div>
+      <div class="tutorial-grid">
+        <div class="tutorial-card">
+          <div class="tutorial-icon">📐</div>
+          <h4 data-i18n="tip1Title">Täpsed voldid</h4>
+          <p data-i18n="tip1Text">Iga voldi täpsus mõjutab lennuki lendamisvõimet. Kasuta joonlauda.</p>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-icon">📄</div>
+          <h4 data-i18n="tip2Title">Õige paber</h4>
+          <p data-i18n="tip2Text">Kasuta standardset A4 paberit (80g/m²). Liiga raske paber ei lenda hästi.</p>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-icon">⚖️</div>
+          <h4 data-i18n="tip3Title">Tasakaal</h4>
+          <p data-i18n="tip3Text">Tiivad peavad olema täpselt sümmeetrilised. Kontrolli enne viskamist.</p>
+        </div>
+        <div class="tutorial-card">
+          <div class="tutorial-icon">🎯</div>
+          <h4 data-i18n="tip4Title">Viskamine</h4>
+          <p data-i18n="tip4Text">Viska lennuk horisontaalselt, 30–45 kraadise nurga all, sujuva liigutusega.</p>
+        </div>
+      </div>
 
-          <p data-i18n="aboutText">
-              Sprint 2 keskendub lihtsale disainile, keelevalikule, teemale ja agiilsele otsusele mitte arendada native äppe selles sprindis.
-          </p>
+      <!-- Interactive folding visualiser -->
+      <div class="fold-demo">
+        <div class="fold-demo-title" data-i18n="foldDemoTitle">Interaktiivne demo — kliki paberil!</div>
+        <div class="paper-stage">
+          <div class="paper" id="demo-paper">
+            <div class="paper-fold" id="fold-overlay"></div>
+            <div class="paper-label" id="paper-label" data-i18n="paperLabel">A4 paber</div>
+          </div>
+          <div class="fold-steps-hint" id="fold-hint" data-i18n="foldHint">Kliki, et alustada voltimist →</div>
+        </div>
+      </div>
+    </section>
 
-          <h3>Projekti sisu</h3>
-          <ul>
-              <li><strong>index.html</strong> - veebilehe struktuur.</li>
-              <li><strong>style.css</strong> - kujundus ja Dark / Light teema.</li>
-              <li><strong>script.js</strong> - keelevahetus, teema vahetus ja localStorage.</li>
-              <li><strong>README.md</strong> - projekti kirjeldus.</li>
+    <!-- ANALYSIS SECTION (Task 3) -->
+    <section id="analysis" class="analysis-section">
+      <div class="section-header">
+        <div class="section-tag danger-tag" data-i18n="sectionTag3">Sprint 2 · Ülesanne 3</div>
+        <h2 data-i18n="analysisHeading">Analüüs: "Võimatu" soov</h2>
+        <p data-i18n="analysisDesc">Product Owner soovis selle sprindi jooksul luua native mobiilirakendused Androidile ja iOS-ile. Siin on meie argumenteeritud vastus.</p>
+      </div>
 
-          </ul>
+      <div class="alert-box">
+        <div class="alert-icon">⚠</div>
+        <div>
+          <strong data-i18n="alertTitle">Product Ownerilt saabunud nõue:</strong>
+          <p data-i18n="alertText">"Meie konkurentidel on äpid! Me peame hiljemalt selle sprindi lõpuks valmis tegema eraldiseisvad native rakendused nii Androidile kui ka iPhone'ile."</p>
+        </div>
+      </div>
 
-          <h3>Funktsionaalsus</h3>
+      <div class="analysis-grid">
 
-          <h4>1. Mitmekeelsus</h4>
-          <p>
-              Lehel on EE / EN keelevalik.
-          </p>
+        <div class="analysis-card">
+          <div class="analysis-num">01</div>
+          <div class="analysis-icon">⏱</div>
+          <h3 data-i18n="anal1Title">Ajaline sobimatus</h3>
+          <p data-i18n="anal1Text">Native äppide arendus nõuab täiesti eraldi koodibaase: Swift + Xcode iOS-ile ja Kotlin + Android Studio Androidile. See tähendab kaks eraldi rakendust nullist. Sprint 2 ajaraam (1–2 nädalat) on selleks ebareaalselt lühike — miinimum on 3–6 kuud töötavaks MVP-ks.</p>
+          <div class="analysis-tags">
+            <span class="tag">Swift / iOS</span>
+            <span class="tag">Kotlin / Android</span>
+            <span class="tag">2 koodibaasi</span>
+          </div>
+        </div>
 
-          <p>Valitud keel muudab reaalajas:</p>
+        <div class="analysis-card">
+          <div class="analysis-num">02</div>
+          <div class="analysis-icon">👥</div>
+          <h3 data-i18n="anal2Title">Brooksi seadus</h3>
+          <p data-i18n="anal2Text">Fred Brooks kirjutas 1975: <em>"Adding manpower to a late software project makes it later."</em> Uued programmeerijad vajavad onboarding'ut, kommunikatsioonikanalite arv kasvab plahvatuslikult valemiga n(n-1)/2. 3 inimest = 3 kanalit, 6 inimest = 15 kanalit. See lisab keerukust, mitte kiirust.</p>
+          <div class="brooks-formula">
+            <div class="formula-item">
+              <span class="formula-label" data-i18n="team3">3 inimest</span>
+              <div class="formula-bar" style="--w:20%">3 kanalit</div>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label" data-i18n="team5">5 inimest</span>
+              <div class="formula-bar" style="--w:50%">10 kanalit</div>
+            </div>
+            <div class="formula-item">
+              <span class="formula-label" data-i18n="team8">8 inimest</span>
+              <div class="formula-bar" style="--w:100%">28 kanalit</div>
+            </div>
+          </div>
+        </div>
 
-          <ul>
-              <li>navigeerimise tekstid;</li>
-              <li>lehe pealkirjad;</li>
-              <li>lennukite nimed;</li>
-              <li>lennukite kirjeldused;</li>
-              <li>voltimise sammud.</li>
-          </ul>
+        <div class="analysis-card highlight-card">
+          <div class="analysis-num">03</div>
+          <div class="analysis-icon">💡</div>
+          <h3 data-i18n="anal3Title">Agiilne kompromiss: PWA</h3>
+          <p data-i18n="anal3Text">Agiilse manifesti kohaselt on töötav tarkvara peamine edusammude mõõt. Meie ettepanek: muuta olemasolev veebileht Progressive Web App (PWA)-ks. See käitub mobiilis nagu äpp — ikoon avakuval, offline-režiim, push-teated — aga ühe koodibaasiga.</p>
+          <div class="pwa-compare">
+            <div class="compare-col">
+              <div class="compare-header bad" data-i18n="compareNative">Native äpp</div>
+              <ul class="compare-list">
+                <li data-i18n="native1">✗ 3–6 kuud arendust</li>
+                <li data-i18n="native2">✗ 2 eraldi koodibaasi</li>
+                <li data-i18n="native3">✗ App Store ülevaatused</li>
+                <li data-i18n="native4">✗ Kõrge kulu</li>
+              </ul>
+            </div>
+            <div class="compare-col">
+              <div class="compare-header good" data-i18n="comparePWA">PWA</div>
+              <ul class="compare-list">
+                <li data-i18n="pwa1">✓ 1–2 päeva lisatöö</li>
+                <li data-i18n="pwa2">✓ 1 koodibaaas</li>
+                <li data-i18n="pwa3">✓ Kohene kättesaadavus</li>
+                <li data-i18n="pwa4">✓ Madal kulu</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-          <p>
-              Valitud keel salvestatakse brauseri localStorage'i.
-          </p>
+      </div>
 
-          <h4>2. Dark / Light teema</h4>
+      <div class="conclusion-box">
+        <h3 data-i18n="conclusionTitle">Järeldus</h3>
+        <p data-i18n="conclusionText">Soovitame Sprint 2-s rakendada PWA lahendust, mis annab kasutajatele äpitaolise kogemuse minimaalsete lisakuludega. Native äppide arendus lükatakse edasi, kui äriline vajadus on selgelt põhjendatud ja ressursid planeeritud.</p>
+      </div>
+    </section>
 
-          <p>
-              Lehel on teema vahetamise nupp.
-          </p>
+    <!-- ABOUT SECTION -->
+    <section id="about" class="about-section">
+      <div class="section-header">
+        <div class="section-tag" data-i18n="sectionTag4">Projektist</div>
+        <h2 data-i18n="aboutHeading">Sprint 2 kokkuvõte</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-icon">🌐</div>
+          <h4 data-i18n="feat1Title">Mitmekeelsus</h4>
+          <p data-i18n="feat1Text">EE / EN keelevalik reaalajas, localStorage'i salvestamine, kohene ümberlülitus ilma lehe laadimiseta.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🎨</div>
+          <h4 data-i18n="feat2Title">Dark / Light teema</h4>
+          <p data-i18n="feat2Text">Harmooniline värvipaletter, prefers-color-scheme tuvastus, localStorage'i salvestamine.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">📱</div>
+          <h4 data-i18n="feat3Title">Responsive disain</h4>
+          <p data-i18n="feat3Text">Töötab kõikidel seadmetel. PWA-valmis arhitektuur tuleviku laienduseks.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">⚡</div>
+          <h4 data-i18n="feat4Title">XP põhimõtted</h4>
+          <p data-i18n="feat4Text">Simple Design, Working Software, Scope Management — kõik rakendatud selles sprindis.</p>
+        </div>
+      </div>
+      <div class="tech-stack">
+        <span class="tech-item">HTML5</span>
+        <span class="tech-item">CSS3</span>
+        <span class="tech-item">Vanilla JS</span>
+        <span class="tech-item">localStorage</span>
+        <span class="tech-item">prefers-color-scheme</span>
+        <span class="tech-item">Canvas API</span>
+      </div>
+    </section>
 
-          <p>Teema:</p>
-
-          <ul>
-              <li>muudab kogu lehe värviskeemi;</li>
-              <li>salvestatakse localStorage'i;</li>
-              <li>kasutab esmakordsel avamisel prefers-color-scheme süsteemieelistust.</li>
-          </ul>
-
-          <h3>Kasutatud põhimõtted</h3>
-
-          <ul>
-              <li>Simple Design</li>
-              <li>Working software</li>
-              <li>Scope Management</li>
-              <li>Agile compromise</li>
-              <li>XP: lihtsaim lahendus, mis töötab</li>
-          </ul>
-      </section>
   </main>
 
-  <footer>
-    <p data-i18n="footerText">AT 6.1 Praktiline projektijuhtimine - Sprint 2</p>
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">✈ Aerofold 2.0</div>
+      <p class="footer-text" data-i18n="footerText">AT 6.1 Praktiline projektijuhtimine — Sprint 2</p>
+      <div class="footer-badge" data-i18n="footerBadge">Agiilne arendus · XP · Scrum</div>
+    </div>
   </footer>
 
   <script src="script.js"></script>
