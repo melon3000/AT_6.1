@@ -197,9 +197,7 @@ const btnEt = document.getElementById("btn-et");
 const btnEn = document.getElementById("btn-en");
 const themeToggle = document.getElementById("theme-toggle");
 const planesContainer = document.getElementById("planes-container");
-const demoPaper = document.getElementById("demo-paper");
-const foldHint = document.getElementById("fold-hint");
-const paperLabel = document.getElementById("paper-label");
+
 
 // ============================================================
 // LANGUAGE
@@ -375,33 +373,390 @@ const statsBar = document.querySelector(".stats-bar");
 if (statsBar) statsObs.observe(statsBar);
 
 // ============================================================
-// PAPER FOLDING DEMO
+// CANVAS ORIGAMI DEMO
 // ============================================================
-let foldStep = 0;
-const foldClasses = ["fold-1", "fold-2", "fold-3", "fold-4", "fold-5", "fold-done"];
-const foldLabels = {
-  et: ["Murra pooleks →", "Voldi nurgad →", "Tee tiivad →", "Suru kinni →", "Kujunda nina →", "✈ Valmis! Viska!"],
-  en: ["Fold in half →", "Fold corners →", "Form wings →", "Press flat →", "Shape nose →", "✈ Done! Throw it!"]
-};
+(function() {
+  const canvas = document.getElementById("origami-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const foldHintEl = document.getElementById("fold-hint");
+  const stepLabel = document.getElementById("fold-step-label");
+  const btnNext = document.getElementById("fold-next");
+  const btnPrev = document.getElementById("fold-prev");
 
-if (demoPaper) {
-  demoPaper.addEventListener("click", () => {
-    foldClasses.forEach(c => demoPaper.classList.remove(c));
-    foldStep = (foldStep + 1) % (foldClasses.length + 1);
+  // Color helpers that read CSS vars
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function paperColor() { return document.body.classList.contains("dark") ? "#1e3050" : "#e8edf8"; }
+  function paperEdge() { return document.body.classList.contains("dark") ? "#2e4a72" : "#c0cce4"; }
+  function accentColor() { return document.body.classList.contains("dark") ? "#4d90fe" : "#1a56db"; }
+  function shadowColor() { return document.body.classList.contains("dark") ? "rgba(0,0,0,0.5)" : "rgba(15,22,35,0.12)"; }
+  function foldLineColor() { return document.body.classList.contains("dark") ? "rgba(77,144,254,0.5)" : "rgba(26,86,219,0.35)"; }
+  function bgColor() { return document.body.classList.contains("dark") ? "#0d1525" : "#f0f2f7"; }
 
-    const lang = localStorage.getItem("language") || "et";
-    const labels = foldLabels[lang] || foldLabels.et;
-
-    if (foldStep === 0) {
-      foldHint.textContent = translations[lang]?.foldHint || "Kliki, et alustada voltimist →";
-      paperLabel.textContent = translations[lang]?.paperLabel || "A4 paber";
-    } else {
-      demoPaper.classList.add(foldClasses[foldStep - 1]);
-      foldHint.textContent = labels[foldStep - 1];
-      paperLabel.textContent = `${foldStep} / ${foldClasses.length}`;
+  // Step definitions
+  // Each step describes what polygons to draw (the paper shape) + fold lines + description
+  const steps = [
+    {
+      hint_et: "A4 paber, valmis voltimiseks",
+      hint_en: "A4 paper, ready to fold",
+      draw(t) {
+        // Flat rectangle
+        const x = 125, y = 40, w = 250, h = 280;
+        drawSheet([ [x,y],[x+w,y],[x+w,y+h],[x,y+h] ], 1);
+        // Crease lines (grid)
+        ctx.strokeStyle = foldLineColor();
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath(); ctx.moveTo(W/2, y); ctx.lineTo(W/2, y+h); ctx.stroke();
+        ctx.setLineDash([]);
+        // Label
+        label("A4", W/2, y + h/2, 0.6);
+      }
+    },
+    {
+      hint_et: "Voldi paber pikuti pooleks (vasakult paremale)",
+      hint_en: "Fold paper in half lengthwise (left to right)",
+      draw(t) {
+        // Right half flipping over left half
+        const x = 125, y = 40, w = 250, h = 280;
+        const cx = x + w/2;
+        // Back half (static)
+        drawSheet([ [x,y],[cx,y],[cx,y+h],[x,y+h] ], 0.7);
+        // Folding flap: right half rotates around center line
+        const angle = lerp(0, Math.PI, t);
+        const scaleX = Math.cos(angle);
+        ctx.save();
+        ctx.translate(cx, y + h/2);
+        ctx.scale(scaleX, 1);
+        ctx.translate(-cx, -(y + h/2));
+        // Draw flap slightly lighter
+        drawSheet([ [cx,y],[cx+w/2,y],[cx+w/2,y+h],[cx,y+h] ], t < 0.5 ? 1 : 0.85);
+        ctx.restore();
+        // Fold line
+        if (t < 0.95) {
+          ctx.strokeStyle = accentColor();
+          ctx.lineWidth = 2;
+          ctx.setLineDash([8, 4]);
+          ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx, y+h); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        if (t >= 0.95) {
+          // Finished: show folded narrow sheet
+          drawSheet([ [cx - w/2, y],[cx,y],[cx,y+h],[cx-w/2,y+h] ], 1);
+          label("½", cx - w/4, y + h/2, 0.6);
+        }
+      }
+    },
+    {
+      hint_et: "Voldi ülemine vasak nurk diagonaalselt alla",
+      hint_en: "Fold the top-left corner diagonally down",
+      draw(t) {
+        const x = 150, y = 40, w = 200, h = 280;
+        // Base folded sheet
+        drawSheet([ [x,y],[x+w,y],[x+w,y+h],[x,y+h] ], 1);
+        // Top-left triangular flap
+        const midX = x + w/2;
+        const foldY = y + lerp(0, w * 0.7, t);
+        if (t < 0.95) {
+          ctx.save();
+          const cx = x, cy = y;
+          ctx.translate(cx, cy);
+          ctx.rotate(lerp(0, Math.PI * 0.55, t));
+          ctx.translate(-cx, -cy);
+          drawTriangle([x, y], [midX, y], [x, y + w * 0.7], accentColor(), 0.35);
+          ctx.restore();
+          // Dashed fold line
+          ctx.strokeStyle = accentColor();
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(midX, y + w * 0.7); ctx.stroke();
+          ctx.setLineDash([]);
+        } else {
+          // Show result: sheet with one folded corner
+          drawSheet([ [x,y],[x+w,y],[x+w,y+h],[x,y+h] ], 1);
+          drawSheet([ [x,y],[midX,y],[x, y+w*0.7] ], 0.8);
+          label("▼", x + w*0.15, y + w*0.25, 0.55);
+        }
+      }
+    },
+    {
+      hint_et: "Voldi ülemine parem nurk diagonaalselt alla",
+      hint_en: "Fold the top-right corner diagonally down",
+      draw(t) {
+        const x = 150, y = 40, w = 200, h = 280;
+        const midX = x + w/2;
+        const cornerFoldY = y + w * 0.7;
+        // Base
+        drawSheet([ [x,y],[x+w,y],[x+w,y+h],[x,y+h] ], 1);
+        // Left flap already done
+        drawSheet([ [x,y],[midX,y],[x,cornerFoldY] ], 0.8);
+        // Right flap folding
+        if (t < 0.95) {
+          ctx.save();
+          ctx.translate(x+w, y);
+          ctx.rotate(lerp(0, -Math.PI * 0.55, t));
+          ctx.translate(-(x+w), -y);
+          drawTriangle([midX, y], [x+w, y], [x+w, cornerFoldY], accentColor(), 0.35);
+          ctx.restore();
+          ctx.strokeStyle = accentColor();
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath(); ctx.moveTo(x+w, y); ctx.lineTo(midX, cornerFoldY); ctx.stroke();
+          ctx.setLineDash([]);
+        } else {
+          drawSheet([ [x,y],[x+w,y],[x+w,cornerFoldY],[midX,y] ], 0.8);
+        }
+      }
+    },
+    {
+      hint_et: "Painuta tiivad alla — lennuki kuju tekib",
+      hint_en: "Fold wings down — airplane shape forms",
+      draw(t) {
+        const x = 150, y = 40, w = 200, h = 280;
+        const midX = x + w/2;
+        const noseY = y + w * 0.7;
+        // Body
+        drawSheet([ [x,noseY],[midX,y],[x+w,noseY],[x+w,y+h],[x,y+h] ], 1);
+        // Left wing folding down
+        const lAngle = lerp(0, Math.PI * 0.35, t);
+        ctx.save();
+        ctx.translate(x, noseY);
+        ctx.rotate(lAngle);
+        ctx.translate(-x, -noseY);
+        drawSheet([ [x,noseY],[midX,noseY],[x,noseY + (h-noseY+y)*0.55] ], 0.85);
+        ctx.restore();
+        // Right wing
+        ctx.save();
+        ctx.translate(x+w, noseY);
+        ctx.rotate(-lAngle);
+        ctx.translate(-(x+w), -noseY);
+        drawSheet([ [x+w,noseY],[midX,noseY],[x+w,noseY+(h-noseY+y)*0.55] ], 0.85);
+        ctx.restore();
+        // Fold arrows
+        if (t < 0.8) {
+          arrow(midX - 30, noseY - 20, midX - 60, noseY + 40);
+          arrow(midX + 30, noseY - 20, midX + 60, noseY + 40);
+        }
+      }
+    },
+    {
+      hint_et: "Lennuk on valmis! 🎉 Viska 30° nurga all",
+      hint_en: "Airplane is ready! 🎉 Throw at 30° angle",
+      draw(t) {
+        // Draw a proper paper airplane top-down silhouette
+        const cx = W/2, cy = H/2 - 10;
+        const scale = lerp(0.5, 1, Math.min(t * 2, 1));
+        const alpha = Math.min(t * 3, 1);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale, scale);
+        ctx.globalAlpha = alpha;
+        // Body
+        ctx.beginPath();
+        ctx.moveTo(0, -110);       // nose
+        ctx.lineTo(-12, 10);       // left body
+        ctx.lineTo(0, -10);        // tail center notch
+        ctx.lineTo(12, 10);        // right body
+        ctx.closePath();
+        ctx.fillStyle = paperColor();
+        ctx.strokeStyle = paperEdge();
+        ctx.lineWidth = 2;
+        ctx.fill(); ctx.stroke();
+        // Left wing
+        ctx.beginPath();
+        ctx.moveTo(-12, 10);
+        ctx.lineTo(-90, 60);
+        ctx.lineTo(-10, 0);
+        ctx.closePath();
+        ctx.fillStyle = paperColor();
+        ctx.fill(); ctx.stroke();
+        // Right wing
+        ctx.beginPath();
+        ctx.moveTo(12, 10);
+        ctx.lineTo(90, 60);
+        ctx.lineTo(10, 0);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Center crease line
+        ctx.beginPath();
+        ctx.moveTo(0, -110); ctx.lineTo(0, 10);
+        ctx.strokeStyle = foldLineColor();
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+        // Flying sparkle trail
+        if (t > 0.6) {
+          const tr = (t - 0.6) / 0.4;
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + t * 3;
+            const dist = 70 + i * 12;
+            const sx = cx + Math.cos(angle) * dist * tr;
+            const sy = cy + Math.sin(angle) * dist * tr * 0.5;
+            ctx.beginPath();
+            ctx.arc(sx, sy, lerp(3, 0, tr), 0, Math.PI*2);
+            ctx.fillStyle = accentColor();
+            ctx.globalAlpha = (1 - tr) * 0.7;
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
+      }
     }
+  ];
+
+  const stepHints = {
+    et: steps.map(s => s.hint_et),
+    en: steps.map(s => s.hint_en)
+  };
+
+  let currentStep = 0;
+  let animProgress = 1; // 0..1 for transition
+  let animating = false;
+  let animRaf = null;
+  let displayStep = 0; // which step is fully showing
+
+  function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+
+  function drawSheet(pts, brightness) {
+    ctx.save();
+    ctx.shadowColor = shadowColor();
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 4;
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+    const isDark = document.body.classList.contains("dark");
+    // Slightly vary fill per brightness
+    if (isDark) {
+      const b = Math.round(lerp(20, 48, brightness));
+      ctx.fillStyle = `rgb(${b+10}, ${b+28}, ${b+58})`;
+    } else {
+      const b = Math.round(lerp(180, 232, brightness));
+      ctx.fillStyle = `rgb(${b}, ${b+4}, ${b+18})`;
+    }
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = paperEdge();
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTriangle(p1, p2, p3, color, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.moveTo(p1[0], p1[1]);
+    ctx.lineTo(p2[0], p2[1]);
+    ctx.lineTo(p3[0], p3[1]);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function label(text, x, y, size) {
+    ctx.save();
+    ctx.fillStyle = foldLineColor();
+    ctx.font = `${Math.round(size * 28)}px 'Space Mono', monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function arrow(x1, y1, x2, y2) {
+    ctx.save();
+    ctx.strokeStyle = accentColor();
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.6;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 10*Math.cos(angle-0.4), y2 - 10*Math.sin(angle-0.4));
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - 10*Math.cos(angle+0.4), y2 - 10*Math.sin(angle+0.4));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function render(t) {
+    ctx.clearRect(0, 0, W, H);
+    // Background
+    ctx.fillStyle = bgColor();
+    ctx.fillRect(0, 0, W, H);
+    steps[displayStep].draw(t);
+  }
+
+  function updateUI() {
+    const lang = localStorage.getItem("language") || "et";
+    const hints = stepHints[lang] || stepHints.et;
+    stepLabel.textContent = `${currentStep} / ${steps.length - 1}`;
+    if (foldHintEl) foldHintEl.textContent = hints[currentStep] || "";
+    btnPrev.disabled = currentStep === 0;
+    btnNext.disabled = currentStep === steps.length - 1;
+    if (currentStep === steps.length - 1) {
+      btnNext.textContent = lang === "en" ? "Done! ✈" : "Valmis! ✈";
+    } else {
+      btnNext.textContent = lang === "en" ? "Next fold →" : "Järgmine voltimine →";
+    }
+  }
+
+  function animateTo(targetStep) {
+    if (animating) return;
+    if (targetStep < 0 || targetStep >= steps.length) return;
+    animating = true;
+    displayStep = targetStep;
+    currentStep = targetStep;
+    animProgress = 0;
+    const start = performance.now();
+    const duration = 800;
+
+    function tick(now) {
+      const elapsed = now - start;
+      animProgress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - animProgress, 3);
+      render(eased);
+      if (animProgress < 1) {
+        animRaf = requestAnimationFrame(tick);
+      } else {
+        animating = false;
+        render(1);
+        updateUI();
+      }
+    }
+    requestAnimationFrame(tick);
+    updateUI();
+  }
+
+  btnNext.addEventListener("click", () => animateTo(currentStep + 1));
+  btnPrev.addEventListener("click", () => animateTo(currentStep - 1));
+  canvas.addEventListener("click", () => {
+    if (currentStep < steps.length - 1) animateTo(currentStep + 1);
+    else animateTo(0);
   });
-}
+
+  // Redraw on theme change
+  const themeBtn = document.getElementById("theme-toggle");
+  if (themeBtn) themeBtn.addEventListener("click", () => setTimeout(() => render(1), 50));
+
+  // Init
+  render(1);
+  updateUI();
+})();
 
 // ============================================================
 // BROOKS LAW BARS — animate on scroll
