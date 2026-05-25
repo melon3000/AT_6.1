@@ -127,11 +127,13 @@
       <div class="fold-demo">
         <div class="fold-demo-title" data-i18n="foldDemoTitle">Interaktiivne demo — kliki paberil!</div>
         <div class="paper-stage">
-          <div class="paper" id="demo-paper">
-            <div class="paper-fold" id="fold-overlay"></div>
-            <div class="paper-label" id="paper-label" data-i18n="paperLabel">A4 paber</div>
+          <canvas id="origami-canvas" width="500" height="360"></canvas>
+          <div class="fold-nav">
+            <button id="fold-prev" class="fold-nav-btn">← Tagasi</button>
+            <span id="fold-step-label" class="fold-step-label">0 / 6</span>
+            <button id="fold-next" class="fold-nav-btn" data-i18n="foldHint">Kliki, et voltida →</button>
           </div>
-          <div class="fold-steps-hint" id="fold-hint" data-i18n="foldHint">Kliki, et alustada voltimist →</div>
+          <div class="fold-steps-hint" id="fold-hint">Kliki "Kliki, et voltida" või kliki otse lõuendil</div>
         </div>
       </div>
     </section>
